@@ -123,7 +123,7 @@ handles.image=A;
 
 set(handles.currentImageHeight,'String',num2str(height));
 set(handles.currentImageWidth,'String',num2str(width));
-
+set(handles.displayImageName,'String',filename);
 guidata(hObject,handles);
 
 
@@ -607,7 +607,7 @@ else
                 set(handles.currentImageHeight,'String',num2str(height));
                 set(handles.currentImageWidth,'String',num2str(width));
 
-               
+                set(handles.displayImageName,'String',list(i).name);
 
                 break;
             end
