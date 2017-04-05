@@ -22,16 +22,16 @@ function varargout = picturecrop(varargin)
 
 % Edit the above text to modify the response to help picturecrop
 
-% Last Modified by GUIDE v2.5 02-Nov-2015 18:12:03
+% Last Modified by GUIDE v2.5 04-Apr-2017 17:30:23
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @picturecrop_OpeningFcn, ...
-                   'gui_OutputFcn',  @picturecrop_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
-                   'gui_Callback',   []);
+    'gui_Singleton',  gui_Singleton, ...
+    'gui_OpeningFcn', @picturecrop_OpeningFcn, ...
+    'gui_OutputFcn',  @picturecrop_OutputFcn, ...
+    'gui_LayoutFcn',  [] , ...
+    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
@@ -52,7 +52,7 @@ function picturecrop_OpeningFcn(hObject, eventdata, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to picturecrop (see VARARGIN)
 
-global pic_cut down;   
+global pic_cut down;
 pic_cut=0;
 down=0;
 
@@ -88,7 +88,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = picturecrop_OutputFcn(hObject, eventdata, handles) 
+function varargout = picturecrop_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -116,7 +116,9 @@ axes(handles.axes1);
 
 handles.currentFileList = dir(pathname);%保存当前打开图像所在目录的文件列表
 handles.openPath = pathname;
-
+if(exist([pathname,'/Processed'])~=7)
+    mkdir([pathname,'/Processed']);
+end
 handles.currentPathFileCount = 0;
 imshow(A);
 handles.image=A;
@@ -154,9 +156,9 @@ function save_Callback(hObject, eventdata, handles)
 newdata=handles.newdata;
 filename = [handles.savePath,'\\',num2str(handles.savedCutsCount),'.jpg'];
 
- imwrite(newdata,filename);  
- handles.savedCutsCount = handles.savedCutsCount+1;
-  guidata(hObject,handles);
+imwrite(newdata,filename);
+handles.savedCutsCount = handles.savedCutsCount+1;
+guidata(hObject,handles);
 
 
 % --- Executes on mouse press over figure background, over a disabled or
@@ -169,30 +171,30 @@ function figure1_WindowButtonDownFcn(hObject, eventdata, handles)
 global pic_cut down;
 down=1;
 
-    if pic_cut==1&&down==1
-%        if(strcmp(handles.isSizeFixed,'NO')
-            
-          begin_point=get(gca,'currentpoint'); %------按下鼠标左键时取得鼠标当前的坐标值-------
-           handles.begin_point=begin_point;
-        
-            handles.fixedPoint1=begin_point;%保存固定尺寸时候的矩形起始点
-%        else
-         if(strcmp(handles.isSizeFixed,'YES')==1)
-           if handles.fixedWidth*handles.fixedHeight~=0       
-                data=handles.image;
-                axes(handles.axes1);
-                imshow(data);
-                %------------用rectangle函数显示选中的图像截取区域------------------------
-                rect=floor([handles.fixedPoint1(1,1)-handles.fixedWidth/2,handles.fixedPoint1(1,2)-handles.fixedHeight/2, handles.fixedWidth-1 handles.fixedHeight-1]);
-                rectangle('Position',rect,'edgecolor','r','LineWidth',2,'LineStyle','--');
-
-                handles.rect=rect;
-                guidata(hObject,handles);
-           end
-           
-         end
+if pic_cut==1&&down==1
+    %        if(strcmp(handles.isSizeFixed,'NO')
     
-   end
+    begin_point=get(gca,'currentpoint'); %------按下鼠标左键时取得鼠标当前的坐标值-------
+    handles.begin_point=begin_point;
+    
+    handles.fixedPoint1=begin_point;%保存固定尺寸时候的矩形起始点
+    %        else
+    if(strcmp(handles.isSizeFixed,'YES')==1)
+        if handles.fixedWidth*handles.fixedHeight~=0
+            data=handles.image;
+            axes(handles.axes1);
+            imshow(data);
+            %------------用rectangle函数显示选中的图像截取区域------------------------
+            rect=floor([handles.fixedPoint1(1,1)-handles.fixedWidth/2,handles.fixedPoint1(1,2)-handles.fixedHeight/2, handles.fixedWidth-1 handles.fixedHeight-1]);
+            rectangle('Position',rect,'edgecolor','r','LineWidth',2,'LineStyle','--');
+            
+            handles.rect=rect;
+            guidata(hObject,handles);
+        end
+        
+    end
+    
+end
 
 guidata(hObject,handles);
 
@@ -206,34 +208,34 @@ if( strcmp(handles.isSizeFixed , 'NO')==1)
     if pic_cut==1&&down==1
         begin_point=handles.begin_point;
         end_point=get(gca,'currentpoint'); %----------鼠标移动时取得鼠标当前的坐标值-------
-
+        
         x0=begin_point(1,1);
         y0=begin_point(1,2);
         x=end_point(1,1);
         y=end_point(1,2);
-
+        
         width=abs(x-x0);
         handles.fixedWidth = width;
         
         height=abs(y-y0);
         handles.fixedHeight = height;
         rect=floor([min(x,x0) min(y, y0) width-1 height-1]);
-
-       if width*height~=0       
-        data=handles.image;
-        axes(handles.axes1);
-        imshow(data);
-        %------------用rectangle函数显示选中的图像截取区域------------------------
-        rectangle('Position',rect,'edgecolor','r','LineWidth',2,'LineStyle','--');
-
-        handles.rect=rect;
-        set(handles.sizeofCut,'String',[num2str(floor(width)),'x',num2str(floor(height))]);
-        guidata(hObject,handles);
-       end
+        
+        if width*height~=0
+            data=handles.image;
+            axes(handles.axes1);
+            imshow(data);
+            %------------用rectangle函数显示选中的图像截取区域------------------------
+            rectangle('Position',rect,'edgecolor','r','LineWidth',2,'LineStyle','--');
+            
+            handles.rect=rect;
+            set(handles.sizeofCut,'String',[num2str(floor(width)),'x',num2str(floor(height))]);
+            guidata(hObject,handles);
+        end
     end
     
     
-
+    
 end
 guidata(hObject,handles);
 
@@ -248,41 +250,41 @@ global pic_cut down;
 
 % if(strcmp(get(handles.crop,'Visible'),'Off')==1)
 
-    if(strcmp(handles.isSizeFixed, 'NO')==1)
-        set(handles.FixSize,'Visible','On');
-
-    end
+if(strcmp(handles.isSizeFixed, 'NO')==1)
+    set(handles.FixSize,'Visible','On');
+    
+end
 % end
 
 if(strcmp(handles.isSizeFixed,'NO')==1)
     handles.fixedPoint2 =get(gca,'currentpoint');
-
+    
     if pic_cut==1
         rect=handles.rect;
         data=handles.image;
         newdata=imcrop(data,rect);%------截取图像的选中区域---------
-
-       %cla;%----------取消图像上的矩形选中区域---------------
-       axes(handles.axes2);
-       imshow(newdata);
-
-%        pic_cut=0;
-       down=0;
-       handles.newdata=newdata;
+        
+        %cla;%----------取消图像上的矩形选中区域---------------
+        axes(handles.axes2);
+        imshow(newdata);
+        
+        %        pic_cut=0;
+        down=0;
+        handles.newdata=newdata;
     end
 else
     if pic_cut==1
         rect=handles.rect;
         data=handles.image;
         newdata=imcrop(data,rect);%------截取图像的选中区域---------
-
-       %cla;%----------取消图像上的矩形选中区域---------------
-       axes(handles.axes2);
-       imshow(newdata);
-
-%        pic_cut=0;
-       down=0;
-       handles.newdata=newdata;
+        
+        %cla;%----------取消图像上的矩形选中区域---------------
+        axes(handles.axes2);
+        imshow(newdata);
+        
+        %        pic_cut=0;
+        down=0;
+        handles.newdata=newdata;
     end  ;
 end
 guidata(hObject,handles);
@@ -293,26 +295,26 @@ function FixSize_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % if(strcmp(get(handles.crop,'Visible'),'Off')==1)
-     if(strcmp(handles.isSizeFixed,'NO')==1) 
-         handles.isSizeFixed = 'YES';
-         set(handles.FixSize,'String','取消固定');
-         set(handles.editHeight,'Visible','On');
-         set(handles.editWidth,'Visible','On');
-         set(handles.manualSize,'Visible','On');
-         
-         set(handles.editHeight,'String',num2str(floor(handles.fixedHeight)));
-         set(handles.editWidth,'String',num2str(floor(handles.fixedWidth)));
-         
-     
-     else 
-         handles.isSizeFixed = 'NO'
-         set(handles.FixSize,'String','固定窗口');
-         set(handles.editHeight,'Visible','Off');
-         set(handles.editWidth,'Visible','Off');
-         set(handles.manualSize,'Visible','Off');
-     end
+if(strcmp(handles.isSizeFixed,'NO')==1)
+    handles.isSizeFixed = 'YES';
+    set(handles.FixSize,'String','取消固定');
+    set(handles.editHeight,'Visible','On');
+    set(handles.editWidth,'Visible','On');
+    set(handles.manualSize,'Visible','On');
+    
+    set(handles.editHeight,'String',num2str(floor(handles.fixedHeight)));
+    set(handles.editWidth,'String',num2str(floor(handles.fixedWidth)));
+    
+    
+else
+    handles.isSizeFixed = 'NO'
+    set(handles.FixSize,'String','固定窗口');
+    set(handles.editHeight,'Visible','Off');
+    set(handles.editWidth,'Visible','Off');
+    set(handles.manualSize,'Visible','Off');
+end
 % end
-   guidata(hObject,handles);%记得更新数据
+guidata(hObject,handles);%记得更新数据
 
 
 % --- Executes on button press in SavePath.
@@ -320,9 +322,9 @@ function SavePath_Callback(hObject, eventdata, handles)
 % hObject    handle to SavePath (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-       handles.savePath = uigetdir('d:\');
-       guidata(hObject,handles);%记得更新数据
-       
+handles.savePath = uigetdir('d:\');
+guidata(hObject,handles);%记得更新数据
+
 
 
 
@@ -391,10 +393,10 @@ set(handles.editHeight,'String',num2str(floor(handles.fixedHeight)));
 set(handles.editWidth,'String',num2str(floor(handles.fixedWidth)));
 set(handles.sizeofCut,'String',[num2str(floor(handles.fixedWidth)),'x',num2str(floor(handles.fixedHeight))]);
 
-   guidata(hObject,handles);%记得更新数据
-       
-         
-         
+guidata(hObject,handles);%记得更新数据
+
+
+
 
 
 % --- Executes on button press in resizeButton.
@@ -408,11 +410,11 @@ for i = 1: size(list,1)
         fullFileName = [handles.savePath,'\',list(i).name];
         
         if(strcmp(finfo(fullFileName), 'im')==1)%如果是图像
-        src = imread(fullFileName);
-        cols = str2num(get(handles.resizeCols,'String'));
-        rows = str2num(get(handles.resizeRows,'String'));
-        src = imresize(src,[rows,cols]);
-        imwrite(src,fullFileName);
+            src = imread(fullFileName);
+            cols = str2num(get(handles.resizeCols,'String'));
+            rows = str2num(get(handles.resizeRows,'String'));
+            src = imresize(src,[rows,cols]);
+            imwrite(src,fullFileName);
         end
         
     end
@@ -479,7 +481,7 @@ handles.rotatedVersionImage = rotatedImage;
 axes(handles.axes1);
 imshow(handles.image);
 
- guidata(hObject,handles);%记得更新数据
+guidata(hObject,handles);%记得更新数据
 
 
 
@@ -519,12 +521,12 @@ count = handles.zoomInCount + handles.zoomOutCount;
 
 if(count == 0)
     handles.image = handles.rotatedVersionImage;
-elseif(count>0)   
+elseif(count>0)
     handles.image = imresize(handles.rotatedVersionImage,round(handles.zoom(count+1))*[M,N]);
 else
     handles.image = imresize(handles.rotatedVersionImage,round([M,N]/handles.zoom(-count+1)));
 end
- 
+
 axes(handles.axes1);
 [height, width,~] = size(handles.image);
 set(handles.currentImageHeight,'String',num2str(height));
@@ -555,11 +557,11 @@ count = handles.zoomInCount + handles.zoomOutCount;
 [M,N,~] = size(handles.rotatedVersionImage);
 if(count == 0)
     handles.image = handles.rotatedVersionImage;
-elseif(count>0)   
+elseif(count>0)
     handles.image = imresize(handles.rotatedVersionImage,round(handles.zoom(count+1))*[M,N]);
 else
     handles.image = imresize(handles.rotatedVersionImage,round([M,N]/handles.zoom(-count+1)));
-end  
+end
 [height, width,~] = size(handles.image);
 set(handles.currentImageHeight,'String',num2str(height));
 set(handles.currentImageWidth,'String',num2str(width));
@@ -579,10 +581,30 @@ else
     list = handles.currentFileList;
     for i = (handles.currentPathFileCount+1): size(list,1)
         if(list(i).isdir == 0)%如果不是目录，是文件
-            fullFileName = [handles.openPath,'\',list(i).name];
-
+            fullFileName = [handles.openPath,list(i).name];
+            
             if(strcmp(finfo(fullFileName),'im')~=1)%如果是当前图像，跳过
                 continue;
+            elseif(strcmp(fullFileName,handles.currentImageFileName) == 1)
+                
+            
+                if(handles.currentPathFileCount == 0)
+                    cmd = [fullFileName,' ',handles.openPath,'/Processed/',list(i).name];
+                else 
+                                     cmd = [fullFileName,' ',handles.openPath,'/Processed/',list(handles.currentPathFileCount-1).name];
+
+                end
+                if(isunix)
+                    cmd = ['mv',cmd];
+
+
+                else
+
+                    cmd = ['move ',' ', cmd];
+
+                end
+
+                [status,~] = system(cmd);    
             elseif(strcmp(fullFileName,handles.currentImageFileName) ~=1)%不是当前的图像
                 %否则调用打开函数
                 handles.currentImageFileName = fullFileName;
@@ -595,29 +617,46 @@ else
                 end
                 handles.tempImage = A;%保存未旋转之前的图像
                 handles.rotatedVersionImage = A;%此时旋转版本图像就是原图
-              %  cla(handles.axes1);
-                  axes(handles.axes1);
-
-                  handles.currentPathFileCount = i;
-              %  handles.currentFileList = dir(pathname);%保存当前打开图像所在目录的文件列表
-              %  handles.openPath = pathname;
+                %  cla(handles.axes1);
+                axes(handles.axes1);
+                
+                handles.currentPathFileCount = i;
+                %  handles.currentFileList = dir(pathname);%保存当前打开图像所在目录的文件列表
+                %  handles.openPath = pathname;
                 imshow(A);
                 handles.image=A;
-
+                
                 set(handles.currentImageHeight,'String',num2str(height));
                 set(handles.currentImageWidth,'String',num2str(width));
-
+                
                 set(handles.displayImageName,'String',list(i).name);
+                
+                if(handles.currentPathFileCount == 0)
+                    cmd = [fullFileName,' ',handles.openPath,'/Processed/',list(i).name];
+                else 
+                                     cmd = [fullFileName,' ',handles.openPath,'/Processed/',list(handles.currentPathFileCount-1).name];
 
+                end
+                if(isunix)
+                    cmd = ['mv',cmd];
+
+
+                else
+
+                    cmd = ['move ',' ', cmd];
+
+                end
+
+                [status,~] = system(cmd);   
                 break;
             end
-
+            
         end
         
     end
     guidata(hObject,handles);
-
-
+    
+    
 end
 
 
@@ -632,11 +671,11 @@ for i = 1: size(list,1)
         fullFileName = [handles.savePath,'\',list(i).name];
         
         if(strcmp(finfo(fullFileName), 'im')==1)%如果是图像
-        src = imread(fullFileName);
-        cols = str2num(get(handles.resizeCols,'String'));
-        rows = str2num(get(handles.resizeRows,'String'));
-        src = imrotate(src,90);
-        imwrite(src,fullFileName);
+            src = imread(fullFileName);
+            cols = str2num(get(handles.resizeCols,'String'));
+            rows = str2num(get(handles.resizeRows,'String'));
+            src = imrotate(src,90);
+            imwrite(src,fullFileName);
         end
         
     end
@@ -647,3 +686,21 @@ function uipanel1_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to uipanel1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes on key press with focus on figure1 and none of its controls.
+function figure1_KeyPressFcn(hObject, eventdata, handles)
+
+key = get(gcf,'CurrentCharacter');
+switch key
+    case '3'
+        save_Callback(hObject, eventdata, handles)
+    case ' '
+        iterNextImage_Callback(hObject, eventdata, handles)
+end
+% hObject    handle to figure1 (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
